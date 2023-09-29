@@ -2,11 +2,12 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Navbar from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI PDF Chat",
+  title: "PDF Chat Bot",
   description: "Upload a file and start chatting with AI",
 };
 
@@ -23,6 +24,7 @@ export default function RootLayout({
           inter.className
         )}
       >
+        <Navbar />
         {children}
       </body>
     </html>
