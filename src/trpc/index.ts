@@ -2,6 +2,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { privateProcedure, publicProcedure, router } from "./trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
+import { z } from "zod";
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {
@@ -42,6 +43,39 @@ export const appRouter = router({
       },
     });
   }),
+
+  // using zod to validate the data type for input
+  deleteFile: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // spread the ctx
+      const { userId } = ctx;
+
+      // query where a file with the provided id and with signed user exists in DB
+      const file = await db.file.findFirst({
+        where: {
+          id: input.id,
+          userId,
+        },
+      });
+
+      // if doesnt exist throw not found error
+      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // if exists then delete from DB
+      await db.file.delete({
+        where: {
+          id: input.id,
+          userId,
+        },
+      });
+
+      return file;
+    }),
 });
 // Export type router type signature,
 // NOT the router itself.
