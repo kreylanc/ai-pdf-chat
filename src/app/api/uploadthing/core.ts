@@ -1,3 +1,4 @@
+import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 
@@ -19,7 +20,18 @@ export const ourFileRouter = {
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
       return { userId: user.id };
     })
-    .onUploadComplete(async ({ metadata, file }) => {}),
+    .onUploadComplete(async ({ metadata, file }) => {
+      // This code RUNS ON YOUR SERVER after upload
+      const createdFile = await db.file.create({
+        data: {
+          key: file.key,
+          name: file.name,
+          url: file.url,
+          userId: metadata.userId,
+          uploadStatus: "PROCESSING",
+        },
+      });
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
