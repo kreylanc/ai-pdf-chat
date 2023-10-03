@@ -1,20 +1,43 @@
 "use client";
 import { trpc } from "@/app/_trpc/client";
 import UploadButton from "./UploadButton";
-import {
-  Delete,
-  DeleteIcon,
-  Ghost,
-  MessageSquare,
-  Plus,
-  Trash,
-} from "lucide-react";
+import { Ghost, Loader2, MessageSquare, Plus, Trash } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { useState } from "react";
 
 function Dashboard() {
+  const [deletingFile, setDeletingFile] = useState<string | null>(null);
+  /*   hook to manage the cached data
+        using it to invalidate the query when a file is deleted
+        so the UI gets refreshed automatically with new queried data
+    */
+  const utils = trpc.useContext();
+
+  /*  to call getUserFiles API to fetch all the files in the DB
+    rename the returned data to 'files, isLoading from react-query 
+  */
   const { data: files, isLoading } = trpc.getUserFiles.useQuery();
+
+  // to call the delateFile API
+  // rename the mutate to deleteFile
+  const { mutate: deleteFile } = trpc.deleteFile.useMutation({
+    onSuccess: () => {
+      // when the file is deleted the getUserFiles query is marked invalidated
+      // and the data is fetched again
+      utils.getUserFiles.invalidate();
+    },
+    // when the action is happening set the deletingFile value to the file id
+    // this is to reference the id and display a loader for the UI matching ID
+    onMutate: ({ id }) => {
+      setDeletingFile(id);
+    },
+    // when the action is finished set back to null
+    onSettled: () => {
+      setDeletingFile(null);
+    },
+  });
   return (
     <main className="mx-auto max-w-7xl px-2 md:p-10">
       <div className="mt-8 flex flex-col gap-2 items-start justify-between md:flex-row">
@@ -35,6 +58,7 @@ function Dashboard() {
                 new Date(a.createdAt).getTime() -
                 new Date(b.createdAt).getTime()
             )
+            // after the array is sorted according to created Date map the new array
             .map((file) => (
               <li
                 key={file.id}
@@ -53,6 +77,7 @@ function Dashboard() {
                   <div className="flex gap-2 items-center">
                     <Plus size={16} />
                     <p>
+                      {/* Format: Sep 2023 */}
                       {new Date(file.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         year: "numeric",
@@ -63,8 +88,18 @@ function Dashboard() {
                     <MessageSquare size={16} />
                     Message
                   </div>
-                  <Button size="sm" variant="destructive" className="w-full">
-                    <Trash size={16} />
+                  <Button
+                    onClick={() => deleteFile({ id: file.id })}
+                    size="sm"
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    {/* if the state value matches file id display a spinning loader instead */}
+                    {deletingFile === file.id ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Trash size={16} />
+                    )}
                   </Button>
                 </div>
               </li>
@@ -73,6 +108,7 @@ function Dashboard() {
       ) : isLoading ? (
         <Skeleton height={100} className="my-2" count={3} />
       ) : (
+        // if there are no files in the DB show this UI
         <div className="mt-16 flex flex-col items-center gap-2">
           <Ghost className="h-8 w-8 text-stone-800" />
           <h2 className="font-semibold text-xl">
