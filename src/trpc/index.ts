@@ -43,7 +43,7 @@ export const appRouter = router({
       },
     });
   }),
-  // Query to fetch file from DB
+  // API to fetch file from DB
   getFile: privateProcedure
     .input(
       z.object({
@@ -63,6 +63,27 @@ export const appRouter = router({
       if (!file) throw new TRPCError({ code: "NOT_FOUND" });
 
       return file;
+    }),
+  // API to get file upload status
+
+  getFileUploadStatus: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const file = await db.file.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.userId,
+        },
+      });
+
+      // const assertion, value of status is PENDING and read only
+      if (!file) return { status: "PENDING" as const };
+
+      return { status: file.uploadStatus };
     }),
   // using zod to validate the data type for input
   deleteFile: privateProcedure
