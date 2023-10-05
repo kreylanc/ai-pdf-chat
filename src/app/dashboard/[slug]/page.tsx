@@ -1,4 +1,4 @@
-import ChatWrapper from "@/components/ChatWrapper";
+import ChatWrapper from "@/components/chat/ChatWrapper";
 import PdfRenderer from "@/components/PdfRenderer";
 import { db } from "@/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -28,7 +28,7 @@ async function page({ params }: Props) {
 
   if (!file) notFound();
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-3.5rem)] justify-content">
+    <main className="flex-1 flex flex-col h-[calc(100vh-3.5rem)] justify-content">
       <div className="mx-auto w-full max-w-7xl grow lg:flex xl:px-2">
         {/* left side i.e. the pdf file display*/}
         <div className="flex-1 xl:flex">
@@ -38,10 +38,10 @@ async function page({ params }: Props) {
         </div>
         {/* Right side i.e. the chat  */}
         <div className="shrink-0 flex-[0.75] border-t border-gray-200 lg:w-96 lg:border-t-0 lg:border-l">
-          <ChatWrapper />
+          <ChatWrapper fileId={file.id} />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
