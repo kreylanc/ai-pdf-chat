@@ -18,10 +18,7 @@ function ChatInput({ isDisabled }: Props) {
 
   return (
     <div className="absolute w-full bottom-0 left-0">
-      <form
-        action=""
-        className="flex flex-row gap-3 mx-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl"
-      >
+      <div className="flex flex-row gap-3 mx-2 md:mx-4 md:last:mb-6 lg:mx-auto lg:max-w-2xl xl:max-w-3xl">
         <div className="relative flex flex-1 h-full items-stretch md:flex-col">
           <div className="relative w-full flex flex-col flex-grow  p-4">
             <div className="relative flex items-center gap-2">
@@ -49,7 +46,6 @@ function ChatInput({ isDisabled }: Props) {
                 className="absolute right-2 bottom-1.5"
                 aria-label="send message"
                 disabled={isDisabled || isLoading}
-                type="submit"
                 onClick={(e) => {
                   e.preventDefault();
                   addMessage();
@@ -62,7 +58,7 @@ function ChatInput({ isDisabled }: Props) {
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
