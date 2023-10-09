@@ -9,7 +9,9 @@ function Navbar() {
     <nav className="sticky h-14 inset-x-0 top-0 w-full z-30 bg-white/75 drop-shadow-sm backdrop-blur-lg transition-all">
       <MaxWidthWrapper>
         <div className="h-14 flex items-center justify-between">
-          <Link href="/">PDF Bot</Link>
+          <Link href="/" className="font-bold text-lg">
+            PDF Chat Bot
+          </Link>
           <ul className="hidden items-center gap-4 sm:flex">
             <li>
               <Link

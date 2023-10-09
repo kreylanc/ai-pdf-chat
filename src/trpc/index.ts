@@ -3,6 +3,7 @@ import { privateProcedure, publicProcedure, router } from "./trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import { z } from "zod";
+import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {
@@ -43,7 +44,7 @@ export const appRouter = router({
       },
     });
   }),
-  // Query to fetch file from DB
+  // API to fetch file from DB
   getFile: privateProcedure
     .input(
       z.object({
@@ -63,6 +64,80 @@ export const appRouter = router({
       if (!file) throw new TRPCError({ code: "NOT_FOUND" });
 
       return file;
+    }),
+  // API to get file upload status
+  getFileUploadStatus: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const file = await db.file.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.userId,
+        },
+      });
+
+      // const assertion, value of status is PENDING and read only
+      if (!file) return { status: "PENDING" as const };
+
+      return { status: file.uploadStatus };
+    }),
+  getFileMessages: privateProcedure
+    .input(
+      z.object({
+        // variable of number with range of 1-100, can be null too
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+        fileId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      // cursor determines where the user has scrolled and refetch the older msgs
+      const { fileId, cursor } = input;
+      // determines how many messages are fetched
+      const limit = input.limit ?? INFINITE_QUERY_LIMIT;
+
+      const file = await db.file.findFirst({
+        where: {
+          id: fileId,
+          userId,
+        },
+      });
+
+      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const messages = await db.message.findMany({
+        take: limit + 1,
+        where: {
+          fileId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        select: {
+          id: true,
+          isUserMessage: true,
+          createdAt: true,
+          text: true,
+        },
+      });
+
+      console.log(messages);
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      // if DB has more msgs than set limit
+      if (messages.length > limit) {
+        // get the last item of the messages
+        const nextItem = messages.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return { messages, nextCursor };
     }),
   // using zod to validate the data type for input
   deleteFile: privateProcedure
