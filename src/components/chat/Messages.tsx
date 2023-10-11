@@ -3,11 +3,15 @@ import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 import { Loader2, MessageSquare } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import Message from "./Message";
+import { useContext, useEffect, useRef } from "react";
+import { ChatContext } from "./ChatContext";
+import { useIntersectionObserver } from "../hooks/useIntersectionObeserver";
 
 type MessagesProps = {
   fileId: string;
 };
 function Messages({ fileId }: MessagesProps) {
+  const { isLoading: isLoadingAI } = useContext(ChatContext);
   // query for infinite scrolling feature
   const { data, isLoading, fetchNextPage } =
     trpc.getFileMessages.useInfiniteQuery(
@@ -38,14 +42,32 @@ function Messages({ fileId }: MessagesProps) {
     ),
   };
   const combinedMessages = [
-    ...(true ? [loadingMessage] : []), // spread loading messages else an empty array
+    ...(isLoadingAI ? [loadingMessage] : []), // spread loading messages else an empty array
     ...(messages ?? []), // spread the fetched messages if it exists
   ];
 
-  console.log(combinedMessages);
+  // ========= for infinite scrolling
+
+  // observing if the user has scrolled to the last message
+  const containerRef = useRef<HTMLDivElement | null>(null); // containing div for obeserver root
+  const lastMessageRef = useRef<HTMLDivElement | null>(null); // the last div that has been loaded
+  const entry = useIntersectionObserver(lastMessageRef, {
+    root: containerRef.current,
+  });
+
+  useEffect(() => {
+    const isVisible = !!entry?.isIntersecting; // true if user reached the ref element
+
+    if (isVisible) {
+      fetchNextPage();
+    }
+  }, [entry, fetchNextPage]);
 
   return (
-    <div className="flex max-h-[calc(100vh-3.5rem-7rem)] border-zinc-200 flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-green scrollbar-thumb-rounded scrollbar-track-green-lighter scroll-bar-w-2">
+    <div
+      ref={containerRef}
+      className="flex max-h-[calc(100vh-3.5rem-7rem)] border-zinc-200 flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-green scrollbar-thumb-rounded scrollbar-track-green-lighter scrollbar-w-2"
+    >
       {combinedMessages && combinedMessages.length > 0 ? (
         combinedMessages.map((message, i) => {
           // checking if previous message and current message is from the user or not
@@ -54,8 +76,10 @@ function Messages({ fileId }: MessagesProps) {
             combinedMessages[i]?.isUserMessage;
 
           if (i === combinedMessages.length - 1) {
+            // for the last message pass a ref to observe intersection point
             return (
               <Message
+                ref={lastMessageRef}
                 isNextMessageSamePerson={isNextMessageSamePerson}
                 message={message}
                 key={message.id}

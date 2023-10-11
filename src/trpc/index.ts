@@ -127,8 +127,6 @@ export const appRouter = router({
         },
       });
 
-      console.log(messages);
-
       let nextCursor: typeof cursor | undefined = undefined;
       // if DB has more msgs than set limit
       if (messages.length > limit) {
