@@ -114,7 +114,8 @@ export default function Home() {
                 Upload your PDF file
               </strong>
               <span>
-                We'll process your file and make it ready for you to chat with
+                We&apos;ll process your file and make it ready for you to chat
+                with
               </span>
             </div>
           </li>
@@ -125,8 +126,8 @@ export default function Home() {
                 Start asking questions
               </strong>
               <span>
-                It's that simple. Try out today- it really takes less than a
-                minute.
+                It&apos;s that simple. Try out today- it really takes less than
+                a minute.
               </span>
             </div>
           </li>

@@ -112,7 +112,7 @@ function Dashboard() {
         <div className="mt-16 flex flex-col items-center gap-2">
           <Ghost className="h-8 w-8 text-stone-800" />
           <h2 className="font-semibold text-xl">
-            You haven't uploaded any files yet.
+            You haven&apos;t uploaded any files yet.
           </h2>
         </div>
       )}
