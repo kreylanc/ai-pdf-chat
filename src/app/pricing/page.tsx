@@ -78,8 +78,8 @@ function page() {
         <div className="mx-auto mb-10 sm:max-w-lg">
           <h1 className="text-6xl font-bold sm:text-7xl">Pricing</h1>
           <p className="mt-5 text-gray-600 px-6 sm:text-lg">
-            Whether you're just trying out our servicce or need more, we've got
-            you covered.
+            Whether you&apos;re just trying out our servicce or need more,
+            we&apos;ve got you covered.
           </p>
         </div>
         <div className="pt-12 grid grid-cols-1 gap-10 px-4 lg:grid-cols-2">

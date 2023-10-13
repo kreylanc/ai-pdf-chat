@@ -43,7 +43,7 @@ function ChatWrapper({ fileId }: ChatWrapperProps) {
         <div className="flex flex-col justify-center items-center gap-1.5 mb-28">
           <Loader2 className="animate-spin text-green-500" size={28} />
           <h2 className="font-semibold text-xl ">Processing PDF...</h2>
-          <p className="text-zinc-700 text-sm">This won't take long.</p>
+          <p className="text-zinc-700 text-sm">This won&apos;t take long.</p>
         </div>
 
         <ChatInput isDisabled />
@@ -58,7 +58,7 @@ function ChatWrapper({ fileId }: ChatWrapperProps) {
           <XCircle className="text-red-500" size={28} />
           <h2 className="font-semibold text-xl ">Error loading PDF...</h2>
           <p className="text-zinc-700 text-sm">
-            Your <span className="font-semibold">free</span> plan doesn't
+            Your <span className="font-semibold">free</span> plan doesn&apos;t
             support.
           </p>
           <Link

@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "../_trpc/client";
 import { Loader2 } from "lucide-react";
 
-function page() {
+function Page() {
   // useRouter to change the routes back to the origin
   const router = useRouter();
 
@@ -42,4 +42,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;
