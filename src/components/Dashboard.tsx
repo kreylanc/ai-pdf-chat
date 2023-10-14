@@ -6,8 +6,12 @@ import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { getUserSubscriptionPlan } from "@/lib/stripe";
 
-function Dashboard() {
+type SubscriptionProps = {
+  subscriptionPlan: Awaited<ReturnType<typeof getUserSubscriptionPlan>>;
+};
+function Dashboard({ subscriptionPlan }: SubscriptionProps) {
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
   /*   hook to manage the cached data
         using it to invalidate the query when a file is deleted
@@ -42,7 +46,7 @@ function Dashboard() {
     <main className="mx-auto max-w-7xl px-2 md:p-10">
       <div className="mt-8 flex flex-col gap-2 items-start justify-between md:flex-row">
         <h1 className="font-bold text-5xl lg:text-6xl mb-3">My Files</h1>
-        <UploadButton></UploadButton>
+        <UploadButton isSubscribed={subscriptionPlan.isSubscribed} />
       </div>
 
       {/* Display all the files user has uploaded */}
