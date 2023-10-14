@@ -11,14 +11,24 @@ import { useToast } from "./ui/use-toast";
 import { trpc } from "@/app/_trpc/client";
 import { useRouter } from "next/navigation";
 
+type SubscribedProps = {
+  isSubscribed: boolean;
+};
+
 // Component for handing file dropzone
-const UploadDropzone = () => {
+const UploadDropzone = ({ isSubscribed }: SubscribedProps) => {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // destructure object
-  const { startUpload } = useUploadThing("pdfUploader");
+  const { startUpload, permittedFileInfo } = useUploadThing(
+    isSubscribed ? "proPlanUploader" : "freePlanUploader"
+  );
+
+  const maxFileSize: string = permittedFileInfo?.config.pdf?.maxFileSize!;
+
+  const maxFileSizeMB = parseInt(maxFileSize?.split("M")[0]);
 
   // shadcn toaster hook
   const { toast } = useToast();
@@ -59,9 +69,19 @@ const UploadDropzone = () => {
       multiple={false}
       onDrop={async (acceptedFile) => {
         // * Function that runs when user uploads a file
+        // size is in bytes
+        const uploadedFileSizeMB = acceptedFile[0]?.size / (1024 * 1024);
+
+        if (uploadedFileSizeMB > maxFileSizeMB) {
+          return toast({
+            title: "File Size Exceeded",
+            description: "Please try again with smaller file size",
+            variant: "destructive",
+          });
+        }
+
         setIsUploading(true);
         const progressInterval = startSimulatedProgress();
-
         // ============ Handle file upload ==============
 
         // ======= Call the API to upload PDF to the storage
@@ -112,7 +132,9 @@ const UploadDropzone = () => {
                 <p>
                   <strong>Click to upload</strong> or drag and drop
                 </p>
-                <p className="text-sm text-stone-700">PDF (up to 4MB)</p>
+                <p className="text-sm text-stone-700">
+                  PDF (up to {isSubscribed ? "16" : "4"}MB)
+                </p>
               </div>
               {acceptedFiles && acceptedFiles[0] ? (
                 <div className="max-w-sm bg-white flex items-center rounded-md overflow-hidden outline-1 outline-zinc-200 divide-x-2 divide-zinc-200 mt-2">
@@ -155,7 +177,7 @@ const UploadDropzone = () => {
   );
 };
 
-function UploadButton() {
+function UploadButton({ isSubscribed }: SubscribedProps) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog
@@ -170,7 +192,7 @@ function UploadButton() {
         <Button>Upload PDF</Button>
       </DialogTrigger>
       <DialogContent>
-        <UploadDropzone />
+        <UploadDropzone isSubscribed={isSubscribed} />
       </DialogContent>
     </Dialog>
   );
